@@ -5,6 +5,16 @@ import time
 import copy 
 from random import randint
 
+def f_softmax(vec):
+    sum = 0
+    ret = []
+    for i in vec:
+        sum += np.exp(i)
+    for i in vec:
+        ret.append(np.exp(i)/sum)
+    return ret
+
+
 #load MNIST data
 MNIST_data = h5py.File('MNISTdata.hdf5', 'r')
 
