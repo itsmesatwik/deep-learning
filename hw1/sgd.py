@@ -5,6 +5,8 @@ import time
 import copy 
 from random import randint
 
+
+# SOFFTMAX FUNCTION
 def f_softmax(vec):
     sum = 0
     ret = []
@@ -13,6 +15,42 @@ def f_softmax(vec):
     for i in vec:
         ret.append(np.exp(i)/sum)
     return ret
+
+# E(Y) FUNCTION
+def e_func(elem):
+    ret = [0]*10
+    ret[elem] = 1
+    return ret
+
+
+# MULTIPLYING THETA AND X_VEC
+def matrix_mult(theta, x):
+    ret = [0]*10
+    for i in range(theta):
+        for j in range(theta[0]):
+            ret[i] += theta[i][j]*x[j]
+
+    return ret
+
+
+def loss_grad(theta, x, y):
+    e_vec = e_func(y)
+    theta_x = matrix_mult(theta,x)
+    softmax_vec = f_softmax(theta_x)
+    intermed_vec = [0]*10
+    for i in range(10):
+        intermed_vec[i] = e_vec[i] - softmax_vec[i]
+    final_vec = [[0]*10]*784
+    for i in range(784):
+        for j in range(10):
+            final_vec[i][j]
+
+
+
+
+
+
+
 
 
 #load MNIST data
