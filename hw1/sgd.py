@@ -35,9 +35,9 @@ def matrix_mult(theta, x):
 
 
 def matrix_sum(x, y):
-    sum = [[0]*10 for _ in range(784)]
-    for i in range(784):
-        for j in range(10):
+    sum = [[0]*784 for _ in range(10)]
+    for i in range(10):
+        for j in range(784):
             sum[i][j] = x[i][j]+y[i][j]
 
     return sum
@@ -51,9 +51,9 @@ def loss_grad(theta, x, y):
     for i in range(10):
         e_vec[i] -= softmax_vec[i]
     final_vec = [[0] * 10 for _ in range(784)]
-    for i in range(784):
-        for j in range(10):
-            final_vec[i][j] = e_vec[j] * x[i]
+    for i in range(10):
+        for j in range(784):
+            final_vec[i][j] = e_vec[i] * x[j]
 
     return final_vec
 
@@ -75,7 +75,7 @@ def mini_batch(x, y, theta, M_):
 
     for i in range(10):
         for j in range(784):
-            grad_sum[i][j] = grad_sum[i][j] / M_
+            grad_sum[i][j] = (grad_sum[i][j] / M_)
     return grad_sum
 
 
