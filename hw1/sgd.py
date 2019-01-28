@@ -8,12 +8,10 @@ from random import randint
 
 # SOFFTMAX FUNCTION
 def f_softmax(vec):
-    ret = [0] * 10
-    for i in vec:
-        vec[i] = np.exp(vec[i])
-    sum_ = sum(vec)
-    for i in vec:
-        ret[i] = vec[i] / np.float(sum_)
+    ret = np.exp(vec)
+    sum_ = sum(ret)
+    for i in range(10):
+        ret[i] /= np.float(sum_)
     return ret
 
 
@@ -29,7 +27,7 @@ def matrix_mult(theta, x):
     ret = [0] * 10
     for i in range(10):
         for j in range(784):
-            ret[i] += x[j] * theta[i][j]
+            ret[i] += (x[j] * theta[i][j])
 
     return ret
 
@@ -50,7 +48,7 @@ def loss_grad(theta, x, y):
     #intermed_vec = [0] * 10
     for i in range(10):
         e_vec[i] -= softmax_vec[i]
-    final_vec = [[0] * 10 for _ in range(784)]
+    final_vec = [[0] * 784 for _ in range(10)]
     for i in range(10):
         for j in range(784):
             final_vec[i][j] = e_vec[i] * x[j]
@@ -62,25 +60,26 @@ def theta_update(theta, grad, ALPHA):
     #updated_theta = [[0] * 784 for _ in range(10)]
     for i in range(10):
         for j in range(784):
-            theta[i][j] -= (ALPHA * grad[i][j])
+            theta[i][j] += (ALPHA * grad[i][j])
 
     return theta
 
 
-def mini_batch(x, y, theta, M_):
-    grad_sum = [[0]*784 for _ in range(10)]
-    for i in range(100):
-        new_grad = loss_grad(theta, x[i + M_][:], y[i+M_])
-        grad_sum = matrix_sum(grad_sum, new_grad)
+# def mini_batch(x, y, theta,batch_pt):
+#     grad_sum = [[0]*784 for _ in range(10)]
+#     for i in range(10):
+#         #print(i+batch_pt)
+#         new_grad = loss_grad(theta, x[min((i + batch_pt), len(x))][:], y[min((i + batch_pt), len(x))])
+#         grad_sum = matrix_sum(grad_sum, new_grad)
 
-    for i in range(10):
-        for j in range(784):
-            grad_sum[i][j] = (grad_sum[i][j] / np.float(M_))
-    return grad_sum
+#     for i in range(10):
+#         for j in range(784):
+#             grad_sum[i][j] = (grad_sum[i][j] / np.float(10))
+#     return grad_sum
 
 
 # load MNIST data
-MNIST_data = h5py.File('../MNISTdata.hdf5', 'r')
+MNIST_data = h5py.File('MNISTdata.hdf5', 'r')
 
 x_train = np.float32(MNIST_data['x_train'][:])
 y_train = np.int32(np.array(MNIST_data['y_train'][:, 0]))
@@ -91,6 +90,8 @@ MNIST_data.close()
 
 #######################################################################
 
+
+#print(len(x_train[0]))
 
 # Implementing stochastic grad descent algorithm
 
@@ -107,21 +108,33 @@ num_outputs = 10
 theta_0 = np.random.randn(num_outputs,num_inputs) / np.sqrt(num_inputs)  # COMPLETE THIS
 
 ALPHA_VAL = 0.003
-EPOCH = 80
+EPOCH = 50
+print(EPOCH)
 for ep in range(EPOCH):
-    batch_len = 100
+    print(ep)
+    batch_len = 10
     shuffle = np.arange(x_train.shape[0])
     np.random.shuffle(shuffle)
     shuffle_x = x_train[shuffle]
     shuffle_y = y_train[shuffle]
-    for bc in range(0, len(x_test), batch_len):
 
-        gradient_desc = mini_batch(shuffle_x, shuffle_y, theta_0, bc)
+    grad_sum = [[0]*784 for _ in range(10)]
+    for i in range(3000):
+        #print(i+batch_pt)
+        if (i%100 == 0):
+            print(i)
+        new_grad = loss_grad(theta_0, shuffle_x[i][:], shuffle_y[i])
+        theta_0 = theta_update(theta_0, new_grad, ALPHA_VAL)
+        #grad_sum = matrix_sum(grad_sum, new_grad)
 
-        #   gradient_desc = loss_grad(theta_0, shuffle_x, shuffle_y)
-        theta_0 = theta_update(theta_0, gradient_desc, ALPHA_VAL)
+    # for bc in range(0, len(x_test), batch_len):
 
-    print(ep)
+
+    #     gradient_desc = mini_batch(shuffle_x, shuffle_y, theta_0, bc)
+
+    #     #   gradient_desc = loss_grad(theta_0, shuffle_x, shuffle_y)
+    #     theta_0 = theta_update(theta_0, gradient_desc, ALPHA_VAL)
+
 
 #######################################################################
 
