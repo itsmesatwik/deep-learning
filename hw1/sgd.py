@@ -121,8 +121,6 @@ for ep in range(EPOCH):
     grad_sum = [[0]*784 for _ in range(10)]
     for i in range(3000):
         #print(i+batch_pt)
-        if (i%100 == 0):
-            #print(i)
         new_grad = loss_grad(theta_0, shuffle_x[i][:], shuffle_y[i])
         theta_0 = theta_update(theta_0, new_grad, ALPHA_VAL)
         #grad_sum = matrix_sum(grad_sum, new_grad)
