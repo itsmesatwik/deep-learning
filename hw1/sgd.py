@@ -109,9 +109,9 @@ theta_0 = np.random.randn(num_outputs,num_inputs) / np.sqrt(num_inputs)  # COMPL
 
 ALPHA_VAL = 0.003
 EPOCH = 50
-print(EPOCH)
+#print(EPOCH)
 for ep in range(EPOCH):
-    print(ep)
+    #print(ep)
     batch_len = 10
     shuffle = np.arange(x_train.shape[0])
     np.random.shuffle(shuffle)
@@ -122,7 +122,7 @@ for ep in range(EPOCH):
     for i in range(3000):
         #print(i+batch_pt)
         if (i%100 == 0):
-            print(i)
+            #print(i)
         new_grad = loss_grad(theta_0, shuffle_x[i][:], shuffle_y[i])
         theta_0 = theta_update(theta_0, new_grad, ALPHA_VAL)
         #grad_sum = matrix_sum(grad_sum, new_grad)
