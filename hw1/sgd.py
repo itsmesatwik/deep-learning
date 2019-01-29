@@ -108,7 +108,7 @@ num_outputs = 10
 theta_0 = np.random.randn(num_outputs,num_inputs) / np.sqrt(num_inputs)  # COMPLETE THIS
 
 ALPHA_VAL = 0.003
-EPOCH = 50
+EPOCH = 9
 #print(EPOCH)
 for ep in range(EPOCH):
     #print(ep)
