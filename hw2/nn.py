@@ -14,7 +14,7 @@ def softmax(vec):
     vsum = np.float32(1/np.float32(sum(exp_vec)))
     exp_vec *= vsum
 
-    return exp_vec
+    return exp_vec 
 
 # Linear Step i.e Linear transformation of X
 # return Wx + b1
@@ -26,6 +26,17 @@ def linear_step(W, x, b1):
 # Elementwise ReLU nonlinearity to produce the hidden layer
 def hidden_layer(Z):
     return np.maximum(Z,0,Z)
+
+# [000,,,1,,,,00000]
+def e(elem, K):
+    ret = numpy.zeros(K)
+    ret[elem] = 1
+    return ret
+
+def rho(vec, Y):
+    return -1*(np.log(vec[Y]))
+
+def partial_U()
 
 
 
@@ -44,6 +55,8 @@ MNIST_data.close()
 #######################################################################
 
 # IMPLEMENT Neural Network
+
+
 
 
 #######################################################################
