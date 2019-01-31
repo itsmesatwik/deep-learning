@@ -11,16 +11,23 @@ from random import randint
 def softmax(vec):
     #assuming vec is 1-d
     exp_vec = np.exp(vec)
-    vsum = sum(exp_vec)
-    for i in range(len(vec)):
-        exp_vec[i] /= np.float32(vsum)
+    vsum = np.float32(1/np.float32(sum(exp_vec)))
+    exp_vec *= vsum
 
     return exp_vec
 
+# Linear Step i.e Linear transformation of X
+# return Wx + b1
 
 def linear_step(W, x, b1):
     Wx = np.matmul(W,x)
     return np.sum(Wx, b1, axis=0)
+
+# Elementwise ReLU nonlinearity to produce the hidden layer
+def hidden_layer(Z):
+    return np.maximum(Z,0,Z)
+
+
 
 
 
