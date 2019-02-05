@@ -8,38 +8,41 @@ from random import randint
 
 # Softmax Function
 
-def softmax(vec):
+def softmax(vec_):
+    vec = vec_.tolist()[0]
     #assuming vec is 1-d
     exp_vec = np.exp(vec)
     vsum = np.float32(1/np.float32(sum(exp_vec)))
     exp_vec *= vsum
 
-    return exp_vec 
+    return np.matrix(exp_vec )
 
 # Linear Step i.e Linear transformation of X
 # return Wx + b1
 
 def linear_step(W, x, b1):
-    Wx = np.matmul(W,x)
-    return Wx + b1
+    Wx = np.matmul(x,np.transpose(W))
+    return np.matrix(Wx + b1)
 
 # Elementwise ReLU nonlinearity to produce the hidden layer
-def hidden_layer(Z):
-    return np.maximum(Z,0,Z)
+def hidden_layer(Z_):
+    Z = np.array(Z_.tolist()[0])
+    return np.matrix(np.maximum(Z,0,Z))
 
 # [000,,,1,,,,00000]
 def e(elem, K):
     ret = np.zeros(K)
     ret[elem] = 1
-    return ret
+    return np.matrix(ret)
 
-def sigma(Z):
+def sigma(Z_):
+    Z = Z_.tolist()[0]
     for i in range(len(Z)):
         if Z[i] >= 0:
             Z[i] = 1
         else:
             Z[i] = 0
-    return Z
+    return np.matrix(Z)
 
 def cross_entropy_error(vec, Y):
     return -1*(np.log(vec[Y]))
@@ -51,13 +54,13 @@ def partial_b2(partial_u):
     return partial_u
 
 def partial_C(partial_u, H):
-    return np.matmul(partial_u, np.transpose(H))
+    return np.matmul(np.transpose(partial_u), H)
 
 def partial_b1(delta, sigma_z):
-    return delta*sigma_z
+    return np.matrix(np.array(delta.tolist()[0])*np.array(sigma_z.tolist()[0]))
 
 def partial_W(p_b1, X):
-    return np.matmul(p_b1 ,np.transpose(X))
+    return np.matmul(np.transpose(p_b1) ,X)
 
 def param_update(param, ALPHA, grad):
     return param - (ALPHA*grad)
@@ -83,30 +86,46 @@ MNIST_data.close()
 
 num_inputs = 28*28
 num_outputs = 10
-dH = 50
-C = np.random.randn(num_outputs,dH) / np.sqrt(dH)
-W = np.random.randn(dH, num_inputs) / np.sqrt(num_inputs)
-b1 = np.random.randn(dH) / np.sqrt(dH)
-b2 = np.random.randn(num_outputs) / np.sqrt(num_outputs)
-EPOCH = 10
-ALPHA = 1
+dH = 55
+C = np.matrix(np.random.randn(num_outputs,dH) / np.sqrt(dH))
+W = np.matrix(np.random.randn(dH, num_inputs) / np.sqrt(num_inputs))
+b1 = np.matrix(np.random.randn(dH) / np.sqrt(dH))
+b2 = np.matrix(np.random.randn(num_outputs) / np.sqrt(num_outputs))
+EPOCH = 20
+ALPHA = 0.003
 
 for ep in range(EPOCH):
+    print(ep)
     shuffle = np.arange(x_train.shape[0])
     np.random.shuffle(shuffle)
     shuffle_x = x_train[shuffle]
     shuffle_y = y_train[shuffle]
     for i in range(len(shuffle_x)):
-        Z = linear_step(W, shuffle_x[i], b1)
+
+        x_matrix = np.matrix(shuffle_x[i])
+
+        # FORWARD STEP
+        Z = linear_step(W, x_matrix, b1)
+        sigma_z = sigma(Z)
         H = hidden_layer(Z)
         U = linear_step(C, H, b2)
-        soft_x = softmax(shuffle_x[i])
+        soft_x = softmax(U)
         e_y = e(shuffle_y[i], num_outputs)
+
+        # CALCULATE PARTIAL DERIVATIVES
         par_u = partial_U(soft_x, e_y)
-        par_b2 = partial_b2(par_U)
+        par_b2 = partial_b2(par_u)
         par_c = partial_C(par_u, H)
-        delta = np.matmul(np.transpose(C), par_u)
-        par_b1 = 
+        delta = np.matmul(par_u, C)
+        par_b1 = partial_b1(delta, sigma_z)
+        par_w = partial_W(par_b1, x_matrix)
+
+        # UPDATE PARAMETERS
+
+        C = param_update(C, ALPHA, par_c)
+        W = param_update(W, ALPHA, par_w)
+        b1 = param_update(b1, ALPHA, par_b1)
+        b2 = param_update(b2, ALPHA, par_b2)
 
 
 
@@ -121,8 +140,12 @@ total_correct = 0
 for n in range(len(x_test)):
     y = y_test[n]
     x = x_test[n][:]
-    #p = matrix_mult(theta_0, x)
-    prediction = np.argmax(p)
+    Z = linear_step(W, x, b1)
+    sigma_z = sigma(Z)
+    H = hidden_layer(Z)
+    U = linear_step(C, H, b2)
+    soft_x = softmax(U)
+    prediction = np.argmax(soft_x)
     if (prediction == y):
         total_correct += 1
 
