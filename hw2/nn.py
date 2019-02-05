@@ -33,6 +33,14 @@ def e(elem, K):
     ret[elem] = 1
     return ret
 
+def sigma(Z):
+    for i in range(len(Z)):
+        if Z[i] >= 0:
+            Z[i] = 1
+        else:
+            Z[i] = 0
+    return Z
+
 def cross_entropy_error(vec, Y):
     return -1*(np.log(vec[Y]))
 
@@ -45,14 +53,15 @@ def partial_b2(partial_u):
 def partial_C(partial_u, H):
     return np.matmul(partial_u, np.transpose(H))
 
-def partial_b1(delta, Z):
-    return
+def partial_b1(delta, sigma_z):
+    return delta*sigma_z
 
 def partial_W(p_b1, X):
     return np.matmul(p_b1 ,np.transpose(X))
 
 def param_update(param, ALPHA, grad):
     return param - (ALPHA*grad)
+
     
     
 
@@ -93,8 +102,12 @@ for ep in range(EPOCH):
         U = linear_step(C, H, b2)
         soft_x = softmax(shuffle_x[i])
         e_y = e(shuffle_y[i], num_outputs)
-        par_U = soft_x - e_y
-        
+        par_u = partial_U(soft_x, e_y)
+        par_b2 = partial_b2(par_U)
+        par_c = partial_C(par_u, H)
+        delta = np.matmul(np.transpose(C), par_u)
+        par_b1 = 
+
 
 
 
