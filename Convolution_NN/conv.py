@@ -38,20 +38,17 @@ def softmax(vec_):
     return exp_vec
 
 
+def hidden_linear(H, W, bk):
+    U = np.zeros((W.shape[0]))
+    for k in range(W.shape[0]):
+        U[k] = np.vdot(W[k], H) + bk[k]
+
+    return U
 
 
 
 
 
-
-
-
-# Linear Step i.e Linear transformation of X
-# return Wx + b1
-
-def linear_step(W, x, b1):
-    Wx = np.matmul(x,np.transpose(W))
-    return Wx + b1
 
 
 # [000,,,1,,,,00000]
