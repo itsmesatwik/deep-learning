@@ -11,41 +11,48 @@ from random import randint
 ############################
 
 
+
+# Elementwise ReLU nonlinearity to produce the hidden layer
+def hidden_layer(Z):
+    return np.maximum(Z,0,Z)
+
+# Convolution of matrix X with the filter K
 def convolution(X, K, stride):
-    conv = np.matlib.zeros((X.shape[0]-K.shape[0]+1, X.shape[1]-K.shape[1]+1))
+    Z = np.matlib.zeros((X.shape[0]-K.shape[0]+1, X.shape[1]-K.shape[1]+1))
     for m in range(0, conv.shape[0]-1, stride):
         for n in range(0, conv.shape[1]-1, stride):
             X_slice = X[m:m+K.shape[0]-1, n:n+K.shape[1]-1]
-            conv[m,n] = np.vdot(X_slice, K)
+            Z[m,n] = np.vdot(X_slice, K)
 
-    return conv
-
-
-
-
+    return Z
 
 # Softmax Function
 
 def softmax(vec_):
-    vec = vec_.tolist()[0]
+    vec = vec_.A
     #assuming vec is 1-d
     exp_vec = np.exp(vec)
     vsum = np.float32(1/np.float32(sum(exp_vec)))
     exp_vec *= vsum
 
-    return np.matrix(exp_vec )
+    return exp_vec
+
+
+
+
+
+
+
+
+
 
 # Linear Step i.e Linear transformation of X
 # return Wx + b1
 
 def linear_step(W, x, b1):
     Wx = np.matmul(x,np.transpose(W))
-    return np.matrix(Wx + b1)
+    return Wx + b1
 
-# Elementwise ReLU nonlinearity to produce the hidden layer
-def hidden_layer(Z_):
-    Z = np.array(Z_.tolist()[0])
-    return np.matrix(np.maximum(Z,0,Z))
 
 # [000,,,1,,,,00000]
 def e(elem, K):
