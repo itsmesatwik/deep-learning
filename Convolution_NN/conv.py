@@ -26,8 +26,6 @@ def convolution(X, K, stride):
 
     return Z
 
-
-
 def hidden_linear(H, W, bk):
     U = np.zeros((W.shape[0]))
     for k in range(W.shape[0]):
@@ -50,11 +48,13 @@ def softmax(vec):
     return exp_vec
 
 def sigma_prime(Z):
-    for i in range(len(Z)):
-        if Z[i] >= 0:
-            Z[i] = 1
-        else:
-            Z[i] = 0
+    for i in range(Z.shape[0]):
+        for j in range(Z.shape[1]):
+            if Z[i,j] >= 0:
+                Z[i,j] = 1
+            else:
+                Z[i,j] = 0
+    
     return Z
 
 
@@ -108,7 +108,7 @@ filter_dim = 5
 K = np.random.randn(filter_dim, filter_dim) / np.sqrt(filter_dim)
 b = np.random.randn(num_outputs) / np.sqrt(num_outputs)
 W = np.random.randn(num_outputs, input_dim - filter_dim + 1, input_dim - filter_dim + 1) / np.sqrt(input_dim - filter_dim + 1)
-EPOCH = 2
+EPOCH = 10
 ALPHA = 0.003
 
 for ep in range(EPOCH):
@@ -131,14 +131,14 @@ for ep in range(EPOCH):
         # CALCULATE PARTIAL DERIVATIVES
         par_u = partial_U(soft_x, e_y)
         par_w = partial_W(par_u, H)
-        delta = delta(W, par_u)
-        par_k = partial_K(sigma_prime(Z), delta, X)
+        delt = delta(W, par_u)
+        par_k = partial_K(sigma_prime(Z), delt, X)
 
         # UPDATE PARAMETERS
 
         K = param_update(K, ALPHA, par_k)
         W = param_update(W, ALPHA, par_w)
-        b = param_update(b, ALPHA, par_b)
+        b = param_update(b, ALPHA, par_u)
 
 
 
@@ -153,8 +153,9 @@ total_correct = 0
 for n in range(len(x_test)):
     y = y_test[n]
     x = x_test[n][:]
+    x = x.reshape((28,28))
     Z = convolution(x, K, 1)
-    H = hidden_layer(Z)
+    H = sigma(Z)
     U = hidden_linear(H, W, b)
     soft_x = softmax(U)
     prediction = np.argmax(soft_x)
