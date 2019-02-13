@@ -98,13 +98,13 @@ MNIST_data.close()
 # IMPLEMENT Neural Network
 
 num_inputs = 28*28
+input_dim = 28
 num_outputs = 10
-dH = 55
-C = np.matrix(np.random.randn(num_outputs,dH) / np.sqrt(dH))
-W = np.matrix(np.random.randn(dH, num_inputs) / np.sqrt(num_inputs))
-b1 = np.matrix(np.random.randn(dH) / np.sqrt(dH))
-b2 = np.matrix(np.random.randn(num_outputs) / np.sqrt(num_outputs))
-EPOCH = 20
+filter_dim = 5
+K = np,random.randn(filter_dim, filter_dim) / np.sqrt(filter_dim)
+b = np.random.randn(num_outputs) / np.sqrt(num_outputs)
+W = np.random.randn(num_outputs, input_dim - filter_dim + 1, input_dim - filter_dim + 1) / np.sqrt(input_dim - filter_dim + 1)
+EPOCH = 2
 ALPHA = 0.003
 
 for ep in range(EPOCH):
@@ -115,7 +115,7 @@ for ep in range(EPOCH):
     shuffle_y = y_train[shuffle]
     for i in range(len(shuffle_x)):
 
-        x_matrix = np.matrix(shuffle_x[i])
+        X = (shuffle_x[i])
 
         # FORWARD STEP
         Z = linear_step(W, x_matrix, b1)
