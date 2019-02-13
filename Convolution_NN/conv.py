@@ -82,7 +82,13 @@ def delta(W, partial_u):
 def param_update(param, ALPHA, grad):
     return param - (ALPHA*grad)
 
-    
+def final_param(param):
+    sum = param[0]
+    for i in range(1, param.shape[0]):
+        sum += param[i]
+
+    return sum
+
     
 
 
@@ -105,10 +111,11 @@ num_inputs = 28*28
 input_dim = 28
 num_outputs = 10
 filter_dim = 5
-K = np.random.randn(filter_dim, filter_dim) / np.sqrt(filter_dim)
+num_filters = 32
+K = np.random.randn(num_filters, filter_dim, filter_dim) / np.sqrt(filter_dim)
 b = np.random.randn(num_outputs) / np.sqrt(num_outputs)
-W = np.random.randn(num_outputs, input_dim - filter_dim + 1, input_dim - filter_dim + 1) / np.sqrt(input_dim - filter_dim + 1)
-EPOCH = 10
+W = np.random.randn(num_filters, num_outputs, input_dim - filter_dim + 1, input_dim - filter_dim + 1) / np.sqrt(input_dim - filter_dim + 1)
+EPOCH = 1
 ALPHA = 0.003
 
 for ep in range(EPOCH):
@@ -120,28 +127,30 @@ for ep in range(EPOCH):
     for i in range(len(shuffle_x)):
 
         X = (shuffle_x[i]).reshape((28,28))
+        
+        for k in range(num_filters):
+            # FORWARD STEP
+            Z = convolution(X, K[k], 1)
+            H = sigma(Z)
+            U = hidden_linear(H,W[k],b)
+            soft_x = softmax(U)
+            e_y = e(shuffle_y[i], num_outputs)
 
-        # FORWARD STEP
-        Z = convolution(X, K, 1)
-        H = sigma(Z)
-        U = hidden_linear(H,W,b)
-        soft_x = softmax(U)
-        e_y = e(shuffle_y[i], num_outputs)
+            # CALCULATE PARTIAL DERIVATIVES
+            par_u = partial_U(soft_x, e_y)
+            par_w = partial_W(par_u, H)
+            delt = delta(W[k], par_u)
+            par_k = partial_K(sigma_prime(Z), delt, X)
 
-        # CALCULATE PARTIAL DERIVATIVES
-        par_u = partial_U(soft_x, e_y)
-        par_w = partial_W(par_u, H)
-        delt = delta(W, par_u)
-        par_k = partial_K(sigma_prime(Z), delt, X)
+            # UPDATE PARAMETERS
 
-        # UPDATE PARAMETERS
-
-        K = param_update(K, ALPHA, par_k)
-        W = param_update(W, ALPHA, par_w)
-        b = param_update(b, ALPHA, par_u)
+            K[k] = param_update(K[k], ALPHA, par_k)
+            W[k] = param_update(W[k], ALPHA, par_w)
+            b = param_update(b, ALPHA, par_u)
 
 
-
+final_K = final_param(K)
+final_W = final_param(W)
 
 
 #######################################################################
@@ -154,9 +163,9 @@ for n in range(len(x_test)):
     y = y_test[n]
     x = x_test[n][:]
     x = x.reshape((28,28))
-    Z = convolution(x, K, 1)
+    Z = convolution(x, final_K, 1)
     H = sigma(Z)
-    U = hidden_linear(H, W, b)
+    U = hidden_linear(H, final_W, b)
     soft_x = softmax(U)
     prediction = np.argmax(soft_x)
     if (prediction == y):
