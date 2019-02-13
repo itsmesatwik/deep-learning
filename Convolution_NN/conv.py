@@ -26,16 +26,6 @@ def convolution(X, K, stride):
 
     return Z
 
-# Softmax Function
-
-def softmax(vec_):
-    vec = vec_.A
-    #assuming vec is 1-d
-    exp_vec = np.exp(vec)
-    vsum = np.float32(1/np.float32(sum(exp_vec)))
-    exp_vec *= vsum
-
-    return exp_vec
 
 
 def hidden_linear(H, W, bk):
@@ -45,44 +35,45 @@ def hidden_linear(H, W, bk):
 
     return U
 
-
-
-
-
-
-
 # [000,,,1,,,,00000]
 def e(elem, K):
     ret = np.zeros(K)
     ret[elem] = 1
-    return np.matrix(ret)
+    return ret
 
-def sigma(Z_):
-    Z = Z_.tolist()[0]
+# Softmax Function
+def softmax(vec_):
+    vec = vec_.A
+    #assuming vec is 1-d
+    exp_vec = np.exp(vec)
+    vsum = np.float32(1/np.float32(sum(exp_vec)))
+    exp_vec *= vsum
+    return exp_vec
+
+def sigma_prime(Z):
     for i in range(len(Z)):
         if Z[i] >= 0:
             Z[i] = 1
         else:
             Z[i] = 0
-    return np.matrix(Z)
+    return Z
 
-def cross_entropy_error(vec, Y):
-    return -1*(np.log(vec[Y]))
+
+def delta(sigma_prime, delta, X):
+    return convolution(X, (sigma_prime*delta), 1)
+
 
 def partial_U(soft, Y):
     return -1*(Y-soft)
 
-def partial_b2(partial_u):
-    return partial_u
 
-def partial_C(partial_u, H):
-    return np.matmul(np.transpose(partial_u), H)
+def partial_W(partial_b, H):
+    ret = np.zeros((partial_b.shape[0], H.shape[0], H.shape[1]))
+    for i in range(ret.shape[0]):
+        ret[i] = partial_b[i]*H
+    return ret
 
-def partial_b1(delta, sigma_z):
-    return np.matrix(np.array(delta.tolist()[0])*np.array(sigma_z.tolist()[0]))
 
-def partial_W(p_b1, X):
-    return np.matmul(np.transpose(p_b1) ,X)
 
 def param_update(param, ALPHA, grad):
     return param - (ALPHA*grad)
