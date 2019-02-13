@@ -13,15 +13,15 @@ from random import randint
 
 
 # Elementwise ReLU nonlinearity to produce the hidden layer
-def hidden_layer(Z):
+def sigma(Z):
     return np.maximum(Z,0,Z)
 
 # Convolution of matrix X with the filter K
 def convolution(X, K, stride):
-    Z = np.matlib.zeros((X.shape[0]-K.shape[0]+1, X.shape[1]-K.shape[1]+1))
-    for m in range(0, conv.shape[0]-1, stride):
-        for n in range(0, conv.shape[1]-1, stride):
-            X_slice = X[m:m+K.shape[0]-1, n:n+K.shape[1]-1]
+    Z = np.zeros((X.shape[0]-K.shape[0]+1, X.shape[1]-K.shape[1]+1))
+    for m in range(0, Z.shape[0]-1, stride):
+        for n in range(0, Z.shape[1]-1, stride):
+            X_slice = X[m:m+K.shape[0], n:n+K.shape[1]]
             Z[m,n] = np.vdot(X_slice, K)
 
     return Z
@@ -42,8 +42,7 @@ def e(elem, K):
     return ret
 
 # Softmax Function
-def softmax(vec_):
-    vec = vec_.A
+def softmax(vec):
     #assuming vec is 1-d
     exp_vec = np.exp(vec)
     vsum = np.float32(1/np.float32(sum(exp_vec)))
@@ -74,7 +73,7 @@ def partial_W(partial_b, H):
     return ret
 
 def delta(W, partial_u):
-    delt = np.zeros(W.shape[1], W.shape[2])
+    delt = np.zeros((W.shape[1], W.shape[2]))
     for i in range(partial_u.shape[0]):
         delt += partial_u[i]*W[i]
     return delt
@@ -106,7 +105,7 @@ num_inputs = 28*28
 input_dim = 28
 num_outputs = 10
 filter_dim = 5
-K = np,random.randn(filter_dim, filter_dim) / np.sqrt(filter_dim)
+K = np.random.randn(filter_dim, filter_dim) / np.sqrt(filter_dim)
 b = np.random.randn(num_outputs) / np.sqrt(num_outputs)
 W = np.random.randn(num_outputs, input_dim - filter_dim + 1, input_dim - filter_dim + 1) / np.sqrt(input_dim - filter_dim + 1)
 EPOCH = 2
@@ -120,12 +119,11 @@ for ep in range(EPOCH):
     shuffle_y = y_train[shuffle]
     for i in range(len(shuffle_x)):
 
-        X = (shuffle_x[i])
+        X = (shuffle_x[i]).reshape((28,28))
 
         # FORWARD STEP
         Z = convolution(X, K, 1)
-        sigma_z = sigma(Z)
-        H = hidden_layer(Z)
+        H = sigma(Z)
         U = hidden_linear(H,W,b)
         soft_x = softmax(U)
         e_y = e(shuffle_y[i], num_outputs)
@@ -133,15 +131,14 @@ for ep in range(EPOCH):
         # CALCULATE PARTIAL DERIVATIVES
         par_u = partial_U(soft_x, e_y)
         par_w = partial_W(par_u, H)
-        delta = delta()
+        delta = delta(W, par_u)
         par_k = partial_K(sigma_prime(Z), delta, X)
 
         # UPDATE PARAMETERS
 
-        C = param_update(C, ALPHA, par_c)
+        K = param_update(K, ALPHA, par_k)
         W = param_update(W, ALPHA, par_w)
-        b1 = param_update(b1, ALPHA, par_b1)
-        b2 = param_update(b2, ALPHA, par_b2)
+        b = param_update(b, ALPHA, par_b)
 
 
 
@@ -156,7 +153,7 @@ total_correct = 0
 for n in range(len(x_test)):
     y = y_test[n]
     x = x_test[n][:]
-    Z = linear_step(W, x, b1)
+    Z = convolution(x, K, 1)
     H = hidden_layer(Z)
     U = hidden_linear(H, W, b)
     soft_x = softmax(U)
