@@ -59,12 +59,12 @@ def sigma_prime(Z):
     return Z
 
 
-def delta(sigma_prime, delta, X):
+def partial_K(sigma_prime, delta, X):
     return convolution(X, (sigma_prime*delta), 1)
 
 
-def partial_U(soft, Y):
-    return -1*(Y-soft)
+def partial_U(soft, e_Y):
+    return -1*(e_Y-soft)
 
 
 def partial_W(partial_b, H):
@@ -73,6 +73,11 @@ def partial_W(partial_b, H):
         ret[i] = partial_b[i]*H
     return ret
 
+def delta(W, partial_u):
+    delt = np.zeros(W.shape[1], W.shape[2])
+    for i in range(partial_u.shape[0]):
+        delt += partial_u[i]*W[i]
+    return delt
 
 
 def param_update(param, ALPHA, grad):
@@ -118,20 +123,18 @@ for ep in range(EPOCH):
         X = (shuffle_x[i])
 
         # FORWARD STEP
-        Z = linear_step(W, x_matrix, b1)
+        Z = convolution(X, K, 1)
         sigma_z = sigma(Z)
         H = hidden_layer(Z)
-        U = linear_step(C, H, b2)
+        U = hidden_linear(H,W,b)
         soft_x = softmax(U)
         e_y = e(shuffle_y[i], num_outputs)
 
         # CALCULATE PARTIAL DERIVATIVES
         par_u = partial_U(soft_x, e_y)
-        par_b2 = partial_b2(par_u)
-        par_c = partial_C(par_u, H)
-        delta = np.matmul(par_u, C)
-        par_b1 = partial_b1(delta, sigma_z)
-        par_w = partial_W(par_b1, x_matrix)
+        par_w = partial_W(par_u, H)
+        delta = delta()
+        par_k = partial_K(sigma_prime(Z), delta, X)
 
         # UPDATE PARAMETERS
 
@@ -154,9 +157,8 @@ for n in range(len(x_test)):
     y = y_test[n]
     x = x_test[n][:]
     Z = linear_step(W, x, b1)
-    sigma_z = sigma(Z)
     H = hidden_layer(Z)
-    U = linear_step(C, H, b2)
+    U = hidden_linear(H, W, b)
     soft_x = softmax(U)
     prediction = np.argmax(soft_x)
     if (prediction == y):
