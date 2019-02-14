@@ -18,6 +18,11 @@ def sigma(Z):
 
 # Convolution of matrix X with the filter K
 def convolution(X, K, stride):
+    #col_stride = row_stride = X[0,0].itemsize
+
+
+
+
     Z = np.zeros((X.shape[0]-K.shape[0]+1, X.shape[1]-K.shape[1]+1, K.shape[2]))
     for m in range(0, Z.shape[0]-1, stride):
         for n in range(0, Z.shape[1]-1, stride):
@@ -114,6 +119,7 @@ def NN(EPOCH, ALPHA, filter_dim):
         shuffle_x = x_train[shuffle]
         shuffle_y = y_train[shuffle]
         for i in range(len(shuffle_x)):
+            print(i)
 
             X = (shuffle_x[i]).reshape((28,28))
 
