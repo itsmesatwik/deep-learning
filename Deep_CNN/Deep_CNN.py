@@ -27,6 +27,7 @@ import matplotlib.pyplot as plt
 
 # Hyper-parameters
 num_epochs = 150
+batch_size = 128
 
 
 
@@ -122,7 +123,7 @@ print("Class Ends")
 conv_nn = ConvNet()
 conv_nn.cuda()
 loss_func = nn.CrossEntropyLoss()
-optimizer = optim.Adam(conv_nn.parameters(), lr = 0.0001) #using ADAM
+optimizer = optim.Adam(conv_nn.parameters(), lr = 0.001) #using ADAM
 
 test_accuracy = []
 
@@ -131,7 +132,7 @@ test_accuracy = []
 
 
 # Train the model
-for epoch in range(0,num_epochs):
+for epoch in range(150):
     epoch_time = time.time()
     running_loss = 0.0
     accuracy_list = []
@@ -164,22 +165,14 @@ print("Training Finished")
 conv_nn.eval()
 
 
-if heuristic:
-    MC = 1
-else:
-    MC = 100
 
-for data in data_test:
+
+for data in testloader:
     X_test_batch, Y_test_batch = data
     X_test_batch, Y_test_batch = Variable(X_test_batch).cuda(), Variable(Y_test_batch).cuda()
-    for i in range(MC):
-        if i == 0:
-            output = conv_nn(X_test_batch)
-        else:
-            output += conv_nn(X_test_batch)
-    output /= MC
-    pred = output.data.max(1)[1]
-    accuracy = (float(arg_max.eq(Y_test_batch.data).sum())/ float(batch_size))
+    output = conv_nn(X_test_batch)
+    _, pred = torch.max(output.data,1)
+    accuracy = (float(pred.eq(Y_test_batch.data).sum())/ float(batch_size))
     test_accuracy.append(accuracy)
 
 final_accuracy = np.mean(test_accuracy)
