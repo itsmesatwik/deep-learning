@@ -73,7 +73,7 @@ for epoch in range(EPOCHS):
 
 
         outputs = model(images)
-        loss = model(outputs, labels)
+        loss = loss_func(outputs, labels)
         loss.backward()
         optimizer.step()
         prediction = outputs.data.max(1)[1]
