@@ -40,16 +40,14 @@ testset = torchvision.datasets.CIFAR100(root='../', train=False,
                                        download=True, transform=transform_test)
 testloader = torch.utils.data.DataLoader(testset, batch_size=128, shuffle=False, num_workers=2)
 
-model_urls = {'resnet18':'https://download.pytorch.org/models/resnet18-5c106cde.pth'}
 
 
 def resnet18(pretrained = True) :
+    model_urls = {'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth'}
     model = torchvision.models.resnet.ResNet(torchvision.models.resnet.BasicBlock, [2, 2, 2, 2])
     if pretrained :
         model.load_state_dict(torch.utils.model_zoo.load_url(model_urls['resnet18'], model_dir ='./'))
     return model
-
-
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -58,9 +56,8 @@ LR=0.001
 batch_size=128
 
 loss_func = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=LR)
 model = resnet18().to(device)
-
+optimizer = optim.Adam(model.parameters(), lr=LR)
 
 
 
@@ -76,7 +73,7 @@ for epoch in range(EPOCHS):
 
 
         outputs = model(images)
-        loss = criterion(outputs, labels)
+        loss = model(outputs, labels)
         loss.backward()
         optimizer.step()
         prediction = outputs.data.max(1)[1]
@@ -100,5 +97,3 @@ for epoch in range(EPOCHS):
         print("Epoch: ", epoch, ' Accuracy of the network on the test images: ', (100.0 * float(correct) / float(total)))
 
 
-
-		
