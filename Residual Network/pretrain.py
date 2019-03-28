@@ -15,22 +15,26 @@ import os
 import time
 import numpy as np
 
+import torchvision.models as models
 
 
-import matplotlib.pyplot as plt
-
+DIM = 224
 
 transform_train = transforms.Compose([
-    transforms.RandomHorizontalFlip(0.4),
-    transforms.RandomVerticalFlip(0.4),
+    transforms.RandomResizedCrop(DIM, scale=(0.7, 1.0), ratio=(1.0,1.0)),
+    transforms.RandomHorizontalFlip(),
     transforms.ToTensor(),
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
 
 transform_test = transforms.Compose([
+    transforms.Resize(DIM, interpolation=2),
     transforms.ToTensor(),
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
+
+
+
 
 trainset = torchvision.datasets.CIFAR100(root='../', train=True, 
                                         download=True, transform=transform_train)
@@ -42,22 +46,23 @@ testloader = torch.utils.data.DataLoader(testset, batch_size=128, shuffle=False,
 
 
 
-def resnet18(pretrained = True) :
-    model_urls = {'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth'}
-    model = torchvision.models.resnet.ResNet(torchvision.models.resnet.BasicBlock, [2, 2, 2, 2])
-    if pretrained :
-        model.load_state_dict(torch.utils.model_zoo.load_url(model_urls['resnet18'], model_dir ='./'))
-    return model
+# def resnet18(pretrained = True) :
+#     model_urls = {'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth'}
+#     model = torchvision.models.resnet.ResNet(torchvision.models.resnet.BasicBlock, [2, 2, 2, 2])
+#     if pretrained :
+#         model.load_state_dict(torch.utils.model_zoo.load_url(model_urls['resnet18'], model_dir ='./'))
+#     return model
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-EPOCHS=100
+EPOCHS=90
 LR=0.001
 batch_size=128
 
 loss_func = nn.CrossEntropyLoss()
-model = resnet18().to(device)
-optimizer = optim.Adam(model.parameters(), lr=LR)
+model = models.resnet18(pretrained=True).to(device)
+model.fc = nn.Linear(512,100).to(device)
+optimizer = optim.SGD(model.parameters(), lr = 0.01, momentum=0.9)
 
 
 
@@ -70,9 +75,19 @@ for epoch in range(EPOCHS):
         images = Variable(images).to(device)
         labels = Variable(labels).to(device)
         optimizer.zero_grad()
-
-
-        outputs = model(images)
+        with torch.no_grad():
+            h = model.conv1(images)
+            h = model.bn1(h)
+            h = model.relu(h)
+            h = model.maxpool(h)
+            h = model.layer1(h)
+            h = model.layer2(h)
+            h = model.layer3(h)
+            #h = model.layer4(h)
+        h = model.layer4(h)
+        h = model.avgpool(h)
+        h = h.view(h.size(0), -1)
+        outputs = model.fc(h)
         loss = loss_func(outputs, labels)
         loss.backward()
         optimizer.step()
