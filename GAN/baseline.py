@@ -122,6 +122,7 @@ class Generator(nn.Module):
         return x
 
 
+batch_size = 128
 
 transform_train = transforms.Compose([
     transforms.RandomResizedCrop(32, scale=(0.7, 1.0), ratio=(1.0,1.0)),
@@ -148,7 +149,40 @@ testset = torchvision.datasets.CIFAR10(root='./', train=False, download=False, t
 testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=8)
 
 
+model =  Discriminator()
+model.cuda()
+criterion = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 
+EPOCH = 200
+
+for ep in range(EPOCH):
+	running_loss = 0.0
+	if(epoch==50):
+	    for param_group in optimizer.param_groups:
+	        param_group['lr'] = learning_rate/10.0
+	if(epoch==75):
+	    for param_group in optimizer.param_groups:
+	        param_group['lr'] = learning_rate/100.0
+
+	for batch_idx, (X_train_batch, Y_train_batch) in enumerate(trainloader):
+
+	    if(Y_train_batch.shape[0] < batch_size):
+	        continue
+
+	    X_train_batch = Variable(X_train_batch).cuda()
+	    Y_train_batch = Variable(Y_train_batch).cuda()
+	    _, output = model(X_train_batch)
+
+	    loss = criterion(output, Y_train_batch)
+	    optimizer.zero_grad()
+
+	    loss.backward()
+	    optimizer.step()
+
+	    running_loss += loss.item()
+	
+torch.save(model,'cifar10.model')
 
 
 
