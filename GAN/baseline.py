@@ -107,7 +107,46 @@ class Generator(nn.Module):
 		self.conv8 = nn.Sequential(
 			nn.Conv2d(in_channels=196, out_channels=3, kernel_size=3, stride=1, padding=1),
 			nn.Tanh())
-		
+
+	def forward(self, x):
+		x = self.fc1(x)
+        x = x.view(-1, 196, 4, 4)
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x = self.conv3(x)
+        x = self.conv4(x)
+        x = self.conv5(x)
+        x = self.conv6(x)
+        x = self.conv7(x)
+        x = self.conv8(x)
+        return x
+
+
+
+transform_train = transforms.Compose([
+    transforms.RandomResizedCrop(32, scale=(0.7, 1.0), ratio=(1.0,1.0)),
+    transforms.ColorJitter(
+            brightness=0.1*torch.randn(1),
+            contrast=0.1*torch.randn(1),
+            saturation=0.1*torch.randn(1),
+            hue=0.1*torch.randn(1)),
+    transforms.RandomHorizontalFlip(),
+    transforms.ToTensor(),
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+])
+
+transform_test = transforms.Compose([
+    transforms.CenterCrop(32),
+    transforms.ToTensor(),
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+])
+
+trainset = torchvision.datasets.CIFAR10(root='./', train=True, download=True, transform=transform_train)
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=8)
+
+testset = torchvision.datasets.CIFAR10(root='./', train=False, download=False, transform=transform_test)
+testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=8)
+
 
 
 
