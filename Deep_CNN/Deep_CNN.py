@@ -133,6 +133,7 @@ test_accuracy = []
 
 # Train the model
 for epoch in range(150):
+    
     epoch_time = time.time()
     running_loss = 0.0
     accuracy_list = []
