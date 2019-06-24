@@ -6,6 +6,22 @@ import copy
 from random import randint
 
 
+
+def print_digit(digit):
+    count = 0
+    digit_str = ""
+    for i in range(28):
+        for j in range(28):
+            if (digit[count] > 0.78):
+                digit_str += '#'
+            elif (digit[count] > 0.4):
+                digit_str += '+'
+            else:
+                digit_str += '.'
+            count += 1
+        digit_str += '\n'
+    return(digit_str)
+
 # Softmax Function
 
 def softmax(vec_):
@@ -95,7 +111,7 @@ EPOCH = 20
 ALPHA = 0.003
 
 for ep in range(EPOCH):
-    print(ep)
+    print("EPOCH: ", ep)
     shuffle = np.arange(x_train.shape[0])
     np.random.shuffle(shuffle)
     shuffle_x = x_train[shuffle]
@@ -137,17 +153,21 @@ for ep in range(EPOCH):
 
 total_correct = 0
 
-for n in range(len(x_test)):
-    y = y_test[n]
-    x = x_test[n][:]
-    Z = linear_step(W, x, b1)
-    sigma_z = sigma(Z)
-    H = hidden_layer(Z)
-    U = linear_step(C, H, b2)
-    soft_x = softmax(U)
-    prediction = np.argmax(soft_x)
-    if (prediction == y):
-        total_correct += 1
+with open("outputs.txt", 'w') as outfile:
+    for n in range(len(x_test)):
+        y = y_test[n]
+        x = x_test[n][:]
+        Z = linear_step(W, x, b1)
+        sigma_z = sigma(Z)
+        H = hidden_layer(Z)
+        U = linear_step(C, H, b2)
+        soft_x = softmax(U)
+        prediction = np.argmax(soft_x)
+        if (prediction == y):
+            total_correct += 1
+        else:
+            outfile.write("\nPrediction: {}, Label: {}\n".format(prediction, y))
+            outfile.write(print_digit(x_test[n]))
 
 
 print (total_correct/np.float(len(x_test)))

@@ -6,6 +6,23 @@ import copy
 from random import randint
 
 
+
+def print_digit(digit):
+    count = 0
+    digit_str = ""
+    for i in range(28):
+        for j in range(28):
+            if (digit[count] > 0.4):
+                digit_str += '#'
+            elif (digit[count] > 0.78):
+                digit_str += '+'
+            else:
+                digit_str += '.'
+            count += 1
+        digit_str += '\n'
+    return(digit_str)
+
+
 # SOFFTMAX FUNCTION
 def f_softmax(vec):
     ret = np.exp(vec)
@@ -86,6 +103,7 @@ y_train = np.int32(np.array(MNIST_data['y_train'][:, 0]))
 x_test = np.float32(MNIST_data['x_test'][:])
 y_test = np.int32(np.array(MNIST_data['y_test'][:, 0]))
 
+
 MNIST_data.close()
 
 #######################################################################
@@ -140,13 +158,16 @@ for ep in range(EPOCH):
 
 total_correct = 0
 
-for n in range( len(x_test)):
-    y = y_test[n]
-    x = x_test[n][:]
-    p = matrix_mult(theta_0, x)
-    prediction = np.argmax(p)
-    if (prediction == y):
-        total_correct += 1
-
+with open("outputs.txt", 'w') as outfile:
+    for n in range( len(x_test)):
+        y = y_test[n]
+        x = x_test[n][:]
+        p = matrix_mult(theta_0, x)
+        prediction = np.argmax(p)
+        if (prediction == y):
+            total_correct += 1
+        else:
+            outfile.write(print_digit(x_test[n]))
+            outfile.write("\nPrediction: {}, Label: {}\n".format(prediction, y))
 
 print (total_correct/np.float(len(x_test)))
